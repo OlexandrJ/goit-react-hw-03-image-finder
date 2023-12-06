@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
+import PropTypes from 'prop-types';
 
-const Modal = ({ imageUrl, onClose }) => {
+
+const Modal = ({ largeImageURL, onClose }) => {
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.code === 'Escape') {
@@ -22,12 +24,17 @@ const Modal = ({ imageUrl, onClose }) => {
   };
 
   return (
-    <div className="overlay" onClick={handleClick}>
-      <div className="modal">
-        <img src={imageUrl} alt="" />
+    <div className="Overlay" onClick={handleClick}>
+      <div className="Modal">
+        <img src={largeImageURL} alt="" />
       </div>
     </div>
   );
+};
+
+Modal.propTypes = {
+  largeImageURL: PropTypes.string.isRequired,
+  onClose: PropTypes.func.isRequired,
 };
 
 export default Modal;
