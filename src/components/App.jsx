@@ -14,6 +14,7 @@ class App extends Component {
       largeImageURL: '',
       showModal: false,
       hasMoreImages: true,
+      loading: false,
     };
   }
 
@@ -27,6 +28,8 @@ class App extends Component {
   };
 
   fetchImages = (searchQuery, page) => {
+    this.setState({ loading: true });
+
     const apiKey = '40243094-9cac1343afd7c4b92bc3dbcfd';
     const perPage = 12;
     const apiUrl = `https://pixabay.com/api/?q=${searchQuery}&page=${page}&key=${apiKey}&image_type=photo&orientation=horizontal&per_page=${perPage}`;
@@ -44,7 +47,10 @@ fetch(apiUrl)
           }));
         }
       })
-      .catch((error) => console.error('Error fetching images:', error));
+      .catch((error) => console.error('Error fetching images:', error))
+    .finally(() => {
+      this.setState({ loading: false });
+    });
   };
 
   handleLoadMore = () => {
@@ -68,18 +74,19 @@ fetch(apiUrl)
   };
 
 render() {
-    const { images, largeImageURL, showModal, hasMoreImages } = this.state;
-    const shouldRenderLoadMore = images.length > 0 && hasMoreImages;
+  const { images, largeImageURL, showModal, hasMoreImages, loading } = this.state;
+  const shouldRenderLoadMore = images.length > 0 && hasMoreImages;
 
-    return (
-      <div className="App">
-        <Searchbar onSubmit={this.handleSearchSubmit} />
-        <ImageGallery images={images} openModal={this.openModal} />
-        {shouldRenderLoadMore && <Button onLoadMore={this.handleLoadMore} />}
-        {showModal && <Modal largeImageURL={largeImageURL} onClose={this.closeModal} />}
-      </div>
-    );
-  }
+  return (
+    <div className="App">
+      <Searchbar onSubmit={this.handleSearchSubmit} />
+      <ImageGallery images={images} openModal={this.openModal} />
+      {loading && <p>Loading...</p>}
+      {shouldRenderLoadMore && !loading && <Button onLoadMore={this.handleLoadMore} />}
+      {showModal && <Modal largeImageURL={largeImageURL} onClose={this.closeModal} />}
+    </div>
+  );
+}
 }
 
 export default App;
