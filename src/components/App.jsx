@@ -31,15 +31,16 @@ class App extends Component {
     const perPage = 12;
     const apiUrl = `https://pixabay.com/api/?q=${searchQuery}&page=${page}&key=${apiKey}&image_type=photo&orientation=horizontal&per_page=${perPage}`;
 
-    fetch(apiUrl)
+fetch(apiUrl)
       .then((response) => response.json())
       .then((data) => {
-        if (data.hits.length === 0) {
-          this.setState({ hasMoreImages: false });
-        } else {
-          this.setState((prevState) => ({
-            images: [...prevState.images, ...data.hits],
-            currentPage: prevState.currentPage + 1,
+  if (data.hits.length === 0) {
+    this.setState({ hasMoreImages: false });
+  } else {
+    this.setState((prevState) => ({
+      images: [...prevState.images, ...data.hits],
+      currentPage: prevState.currentPage + 1,
+      hasMoreImages: true,
           }));
         }
       })
@@ -66,14 +67,15 @@ class App extends Component {
     });
   };
 
-  render() {
+render() {
     const { images, largeImageURL, showModal, hasMoreImages } = this.state;
+    const shouldRenderLoadMore = images.length > 0 && hasMoreImages;
 
     return (
       <div className="App">
         <Searchbar onSubmit={this.handleSearchSubmit} />
         <ImageGallery images={images} openModal={this.openModal} />
-        {images.length > 0 && hasMoreImages && <Button onLoadMore={this.handleLoadMore} />}
+        {shouldRenderLoadMore && <Button onLoadMore={this.handleLoadMore} />}
         {showModal && <Modal largeImageURL={largeImageURL} onClose={this.closeModal} />}
       </div>
     );
