@@ -1,24 +1,32 @@
-import React, { useState } from 'react';
+import React, { Component } from 'react';
 import Searchbar from './Searchbar/Searchbar';
 import ImageGallery from './ImageGallery/ImageGallery';
 import Button from './Button/Button';
 import Modal from './Modal/Modal';
 
-const App = () => {
-  const [query, setQuery] = useState('');
-  const [images, setImages] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [largeImageURL, setLargeImageURL] = useState('');
-  const [showModal, setShowModal] = useState(false);
+class App extends Component {
+  constructor() {
+    super();
+    this.state = {
+      query: '',
+      images: [],
+      currentPage: 1,
+      largeImageURL: '',
+      showModal: false,
+      hasMoreImages: true,
+    };
+  }
 
-  const handleSearchSubmit = (searchQuery) => {
-    setQuery(searchQuery);
-    setImages([]);
-    setCurrentPage(1);
-    fetchImages(searchQuery, 1);
+  handleSearchSubmit = (searchQuery) => {
+    this.setState({
+      query: searchQuery,
+      images: [],
+      currentPage: 1,
+      hasMoreImages: true,
+    }, () => this.fetchImages(searchQuery, 1));
   };
 
-  const fetchImages = (searchQuery, page) => {
+  fetchImages = (searchQuery, page) => {
     const apiKey = '40243094-9cac1343afd7c4b92bc3dbcfd';
     const perPage = 12;
     const apiUrl = `https://pixabay.com/api/?q=${searchQuery}&page=${page}&key=${apiKey}&image_type=photo&orientation=horizontal&per_page=${perPage}`;
@@ -26,34 +34,50 @@ const App = () => {
     fetch(apiUrl)
       .then((response) => response.json())
       .then((data) => {
-        setImages((prevImages) => [...prevImages, ...data.hits]);
-        setCurrentPage((prevPage) => prevPage + 1);
+        if (data.hits.length === 0) {
+          this.setState({ hasMoreImages: false });
+        } else {
+          this.setState((prevState) => ({
+            images: [...prevState.images, ...data.hits],
+            currentPage: prevState.currentPage + 1,
+          }));
+        }
       })
       .catch((error) => console.error('Error fetching images:', error));
   };
 
-  const handleLoadMore = () => {
-    fetchImages(query, currentPage);
+  handleLoadMore = () => {
+    if (this.state.hasMoreImages) {
+      this.fetchImages(this.state.query, this.state.currentPage);
+    }
   };
 
-  const openModal = (largeURL) => {
-    setLargeImageURL(largeURL);
-    setShowModal(true);
+  openModal = (largeURL) => {
+    this.setState({
+      largeImageURL: largeURL,
+      showModal: true,
+    });
   };
 
-  const closeModal = () => {
-    setLargeImageURL('');
-    setShowModal(false);
+  closeModal = () => {
+    this.setState({
+      largeImageURL: '',
+      showModal: false,
+    });
   };
 
-  return (
-    <div className="App">
-      <Searchbar onSubmit={handleSearchSubmit} />
-      <ImageGallery images={images} openModal={openModal} />
-      {images.length > 0 && <Button onLoadMore={handleLoadMore} />}
-      {showModal && <Modal largeImageURL={largeImageURL} onClose={closeModal} />}
-    </div>
-  );
-};
+  render() {
+    const { images, largeImageURL, showModal, hasMoreImages } = this.state;
+
+    return (
+      <div className="App">
+        <Searchbar onSubmit={this.handleSearchSubmit} />
+        <ImageGallery images={images} openModal={this.openModal} />
+        {images.length > 0 && hasMoreImages && <Button onLoadMore={this.handleLoadMore} />}
+        {showModal && <Modal largeImageURL={largeImageURL} onClose={this.closeModal} />}
+      </div>
+    );
+  }
+}
 
 export default App;
