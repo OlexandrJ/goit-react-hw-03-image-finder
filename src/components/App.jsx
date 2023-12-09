@@ -27,37 +27,38 @@ class App extends Component {
     }, () => this.fetchImages(searchQuery, 1));
   };
 
-  fetchImages = (searchQuery, page) => {
-    this.setState({ loading: true });
+fetchImages = (searchQuery, page) => {
+  this.setState({ loading: true });
 
-    const apiKey = '40243094-9cac1343afd7c4b92bc3dbcfd';
-    const perPage = 12;
-    const apiUrl = `https://pixabay.com/api/?q=${searchQuery}&page=${page}&key=${apiKey}&image_type=photo&orientation=horizontal&per_page=${perPage}`;
+  const apiKey = '40243094-9cac1343afd7c4b92bc3dbcfd';
+  const perPage = 12;
+  const apiUrl = `https://pixabay.com/api/?q=${searchQuery}&page=${page}&key=${apiKey}&image_type=photo&orientation=horizontal&per_page=${perPage}`;
 
-fetch(apiUrl)
-      .then((response) => response.json())
-      .then((data) => {
-  if (data.hits.length === 0) {
-    this.setState({ hasMoreImages: false });
-  } else {
-    this.setState((prevState) => ({
-      images: [...prevState.images, ...data.hits],
-      currentPage: prevState.currentPage + 1,
-      hasMoreImages: true,
-          }));
-        }
-      })
-      .catch((error) => console.error('Error fetching images:', error))
+  fetch(apiUrl)
+    .then((response) => response.json())
+    .then((data) => {
+      const { hits, totalHits } = data;
+
+      this.setState((prevState) => ({
+        images: [...prevState.images, ...hits],
+        currentPage: prevState.currentPage + 1,
+        hasMoreImages: prevState.currentPage < Math.ceil(totalHits / perPage),
+      }));
+    })
+    .catch((error) => console.error('Error fetching images:', error))
     .finally(() => {
       this.setState({ loading: false });
     });
-  };
+};
 
-  handleLoadMore = () => {
-    if (this.state.hasMoreImages) {
-      this.fetchImages(this.state.query, this.state.currentPage);
-    }
-  };
+handleLoadMore = () => {
+  const { loading, hasMoreImages, query, currentPage } = this.state;
+
+  if (!loading && hasMoreImages) {
+    this.fetchImages(query, currentPage);
+  }
+};
+
 
   openModal = (largeURL) => {
     this.setState({
