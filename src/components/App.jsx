@@ -82,7 +82,7 @@ render() {
       <Searchbar onSubmit={this.handleSearchSubmit} />
       <ImageGallery images={images} openModal={this.openModal} />
       {loading && <p>Loading...</p>}
-      {shouldRenderLoadMore && !loading && <Button onLoadMore={this.handleLoadMore} />}
+       {shouldRenderLoadMore && !loading && <Button onLoadMore={this.handleLoadMore} hasMoreImages={hasMoreImages} />}
       {showModal && <Modal largeImageURL={largeImageURL} onClose={this.closeModal} />}
     </div>
   );
